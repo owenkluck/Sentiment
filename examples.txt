@@ -1,0 +1,3 @@
+widget: the building block of a GUI
+container: a widget that can hold other widgets
+layout manager: the code that arranges widgets within a container
