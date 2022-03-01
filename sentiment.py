@@ -12,8 +12,28 @@ class MenuOption(Enum):
     EXIT = 'Exit the program'
 
 
+def option_input(options):
+    while True:
+        try:
+            chosen_option = int(input('Enter a number from 1 to 8:'))
+            if chosen_option <= 0:
+                raise IndexError
+            return options[chosen_option - 1]
+        except IndexError:
+            print('Please enter a valid, in-range number')
+
+
 def main():
-    pass
+    options = tuple(MenuOption)
+    while True:
+        print('Choose an option:')
+        for i in range(len(options)):
+            print(f'\t{i + 1}. {options[i].value}')
+        input_option = option_input(options)
+        if input_option == MenuOption.EXIT:
+            return
+        else:
+            print(f'{input_option}\n')
 
 
 if __name__ == '__main__':
