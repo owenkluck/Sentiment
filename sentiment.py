@@ -2,7 +2,6 @@ from enum import Enum
 
 
 class MenuOption(Enum):
-
     SHOW_REVIEWS = 'Show reviews'
     CHECK_TOKEN = 'Check if a token is present'
     SHOW_DOCUMENT_FREQUENCY = 'Show the document frequency for a particular token'
@@ -13,55 +12,43 @@ class MenuOption(Enum):
     EXIT = 'Exit the program'
 
 
-def option_input(options):
-
+def get_user_input(input_prompt):
     while True:
         try:
-            chosen_option = int(input('Enter a number from 1 to 8:'))
-            if chosen_option <= 0:
+            input_number = int(input(input_prompt))
+            if input_number <= 0:
                 raise IndexError
-            return options[chosen_option - 1]
+            return input_number
         except IndexError:
             print('Please enter a valid, in-range number')
 
 
 def main():
-
-    with open("sentiment.txt", "r") as sentiment_text:
-        reviews: []
-        try:
-            for a_line in sentiment_text:
-                strip_lines = a_line.strip()
-                reviews = strip_lines.split()
-                print(reviews)
-                m = reviews.append(reviews)
-                values = a_line.split()
-            print(values)
-        except FileExistsError:
-            print("This file does not exist")
+    try:
+        with open("sentiment.txt", "r") as sentiment_text:
+            reviews = []
+            for line in sentiment_text:
+                reviews.append(line.strip())
+    except FileNotFoundError:
+        print("This file does not exist")
+        return
 
     options = tuple(MenuOption)
     while True:
         print('Choose an option:')
         for i in range(len(options)):
             print(f'\t{i + 1}. {options[i].value}')
-        input_option = option_input(options)
+        input_option = options[get_user_input('Enter a number from 1 to 8:') - 1]
         if input_option == MenuOption.EXIT:
             return
+        elif input_option == MenuOption.SHOW_REVIEWS:
+            beginning_review_number = get_user_input('Enter a beginning review number from 1 to 8529:')
+            ending_review_number = get_user_input(
+                f'Enter a ending review number from {beginning_review_number} to 8529:')
+            for review in reviews[beginning_review_number - 1:ending_review_number]:
+                print(f'Review #{reviews.index(review) + 1}: {review}')
         else:
             print(f'{input_option}\n')
-
-        value1 = input('Enter a beginning review number from 1 to 8529: ')
-        value2 = input('Enter a ending review number from ' + value1 + ' to 8529: ')
-        converted_value1 = int(value1)
-        converted_value2 = int(value2)
-        if input_option == MenuOption.SHOW_REVIEWS:
-            print('Enter a beginning review number from 1 to 8529: ')
-        if 1 <= converted_value1 <= 8529:
-            print('Enter a ending review number from ' + value1 + ' to 8529: ')
-        if converted_value1 <= converted_value2 <= 8529:
-            print(reviews[converted_value1 - 1:converted_value2 - 1])
-
 
 
 if __name__ == '__main__':
