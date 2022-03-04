@@ -38,6 +38,16 @@ def get_input_number(input_prompt):
             print('Please enter a valid, in-range number')
 
 
+def get_token_frequency(reviews, input_token):
+
+    number_of_appearances = 0
+    for review in reviews:
+        for token in review[1:].split():
+            if token == input_token:
+                number_of_appearances += 1
+    return number_of_appearances
+
+
 def main():
     try:
         reviews = make_review_list()
@@ -66,6 +76,10 @@ def main():
             else:
                 print(
                     f'The token "{input_token}" is not one of the 16444 unique tokens that appear in the training data.')
+        elif input_option == MenuOption.SHOW_DOCUMENT_FREQUENCY:
+            input_token = input("Enter a token: ").lower()
+            number_of_appearances = get_token_frequency(reviews, input_token)
+            print(f'The training data contains {number_of_appearances} appearance(s) of the token "unmentioned".')
         else:
             print(f'{input_option}\n')
 
