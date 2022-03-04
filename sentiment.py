@@ -27,19 +27,20 @@ def make_token_set(reviews):
     return set(tokens)
 
 
-def get_input_number(input_prompt):
+def get_input_number(input_prompt, smallest_value, collection):
     while True:
         try:
             input_number = int(input(input_prompt))
-            if input_number <= 0:
+            if input_number <= smallest_value or input_number > len(collection):
                 raise IndexError
             return input_number
         except IndexError:
             print('Please enter a valid, in-range number')
+        except ValueError:
+            print('Please enter a valid, in-range number')
 
 
 def get_token_frequency(reviews, input_token):
-
     number_of_appearances = 0
     for review in reviews:
         for token in review[1:].split():
@@ -60,13 +61,15 @@ def main():
         print('Choose an option:')
         for i in range(len(options)):
             print(f'\t{i + 1}. {options[i].value}')
-        input_option = options[get_input_number('Enter a number from 1 to 8: ') - 1]
+        input_option = options[get_input_number('Enter a number from 1 to 8: ', 0, options) - 1]
         if input_option == MenuOption.EXIT:
             return
         elif input_option == MenuOption.SHOW_REVIEWS:
-            beginning_review_number = get_input_number('Enter a beginning review number from 1 to 8529: ')
+            beginning_review_number = get_input_number(f'Enter a beginning review number from 1 to {len(reviews)}: ', 0,
+                                                       reviews)
             ending_review_number = get_input_number(
-                f'Enter a ending review number from {beginning_review_number} to 8529: ')
+                f'Enter a ending review number from {beginning_review_number} to {len(reviews)}: ',
+                beginning_review_number - 1, reviews)
             for review in reviews[beginning_review_number - 1:ending_review_number]:
                 print(f'Review #{reviews.index(review) + 1}: {review}')
         elif input_option == MenuOption.CHECK_TOKEN:
