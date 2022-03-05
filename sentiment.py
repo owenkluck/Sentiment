@@ -1,5 +1,5 @@
 from enum import Enum
-
+import math
 
 class MenuOption(Enum):
     SHOW_REVIEWS = 'Show reviews'
@@ -48,6 +48,30 @@ def get_token_frequency(reviews, input_token):
                 number_of_appearances += 1
     return number_of_appearances
 
+def get_token_statistics(reviews, input_token, number_of_negatives, number_of_neutrals, number_of_positives):
+    type_amount = {number_of_positives: 0, number_of_negatives: 0, number_of_neutrals: 0}
+    for review in reviews:
+        for token in review[1:].split():
+            if token == input_token:
+                if review[0] == '+':
+                    type_amount[number_of_positives] += 1
+                if review[0] == '-':
+                    type_amount[number_of_negatives] += 1
+                if review[0] == '0':
+                    type_amount[number_of_negatives] += 1
+        differential_score = (math.log(1+number_of_positives) - math.log(1+number_of_positives)) - (math.log(1+number_of_neutrals) - math.log(1+number_of_neutrals))
+        if differential_score < -0.1:
+            differential_classification = 'negative'
+        elif differential_score > 0.1:
+            differential_classification = 'positive'
+        else:
+            differential_classification = 'neutral'
+        print(f'The token "{input_token}" has "{type_amount[number_of_negatives]}" negative, "{type_amount[number_of_neutrals]}" neutral, and "{type_amount[number_of_positives]}" positive'
+            f' appearance(s) in the training data.')
+        print(f'The token "{input_token}" is classified as "{differential_classification}" because it has has a differential '
+              f'tf-idf score of "{differential_score}"')
+
+
 
 def main():
     try:
@@ -83,9 +107,11 @@ def main():
             input_token = input("Enter a token: ").lower()
             number_of_appearances = get_token_frequency(reviews, input_token)
             print(f'The training data contains {number_of_appearances} appearance(s) of the token "unmentioned".')
+        elif input_option == MenuOption.SHOW_TOKEN_STATISTICS:
+            input_token = input("Enter a token: ").lower()
+            get_token_statistics()
         else:
             print(f'{input_option}\n')
-
 
 if __name__ == '__main__':
     main()
