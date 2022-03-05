@@ -1,5 +1,6 @@
-from enum import Enum
 import math
+from enum import Enum
+
 
 class MenuOption(Enum):
     SHOW_REVIEWS = 'Show reviews'
@@ -48,29 +49,56 @@ def get_token_frequency(reviews, input_token):
                 number_of_appearances += 1
     return number_of_appearances
 
-def get_token_statistics(reviews, input_token, number_of_negatives, number_of_neutrals, number_of_positives):
-    type_amount = {number_of_positives: 0, number_of_negatives: 0, number_of_neutrals: 0}
+
+def get_token_statistics(reviews, tokens):
+    input_token = input("Enter a token: ").lower()
+    if input_token in tokens:
+        review_type_appearances = get_review_type_appearances(input_token, reviews)
+        differential_score = compute_differential_score(review_type_appearances, reviews)
+        differential_classification = compute_differential_classification(differential_score)
+        print(
+            f'The token "{input_token}" has {review_type_appearances["negative"]} negative, {review_type_appearances["neutral"]} neutral, and {review_type_appearances["positive"]} positive appearance(s) in the training data.')
+        print(
+            f'The token "{input_token}" is classified as {differential_classification} because it has has a differential tf-idf score of {differential_score}')
+    else:
+        print(f'The token "{input_token}" does not appear in the training data.')
+
+
+def compute_differential_classification(differential_score):
+    if differential_score < -0.1:
+        return 'negative'
+    elif differential_score > 0.1:
+        return 'positive'
+    else:
+        return 'neutral'
+
+
+def compute_differential_score(review_type_appearances, reviews):
+    all_tokens_in_positives = 0
+    all_tokens_in_negatives = 0
+    for review in reviews:
+        for token in review[1:].split():
+            if review[0] == '+':
+                all_tokens_in_positives += 1
+            if review[0] == '-':
+                all_tokens_in_negatives += 1
+    differential_score = (math.log(1 + review_type_appearances['positive']) - math.log(1 + all_tokens_in_positives)) - (
+            math.log(1 + review_type_appearances['negative']) - math.log(1 + all_tokens_in_negatives))
+    return differential_score
+
+
+def get_review_type_appearances(input_token, reviews):
+    review_type_appearances = {'positive': 0, 'negative': 0, 'neutral': 0}
     for review in reviews:
         for token in review[1:].split():
             if token == input_token:
                 if review[0] == '+':
-                    type_amount[number_of_positives] += 1
+                    review_type_appearances['positive'] += 1
                 if review[0] == '-':
-                    type_amount[number_of_negatives] += 1
+                    review_type_appearances['negative'] += 1
                 if review[0] == '0':
-                    type_amount[number_of_negatives] += 1
-        differential_score = (math.log(1+number_of_positives) - math.log(1+number_of_positives)) - (math.log(1+number_of_neutrals) - math.log(1+number_of_neutrals))
-        if differential_score < -0.1:
-            differential_classification = 'negative'
-        elif differential_score > 0.1:
-            differential_classification = 'positive'
-        else:
-            differential_classification = 'neutral'
-        print(f'The token "{input_token}" has "{type_amount[number_of_negatives]}" negative, "{type_amount[number_of_neutrals]}" neutral, and "{type_amount[number_of_positives]}" positive'
-            f' appearance(s) in the training data.')
-        print(f'The token "{input_token}" is classified as "{differential_classification}" because it has has a differential '
-              f'tf-idf score of "{differential_score}"')
-
+                    review_type_appearances['neutral'] += 1
+    return review_type_appearances
 
 
 def main():
@@ -108,10 +136,10 @@ def main():
             number_of_appearances = get_token_frequency(reviews, input_token)
             print(f'The training data contains {number_of_appearances} appearance(s) of the token "unmentioned".')
         elif input_option == MenuOption.SHOW_TOKEN_STATISTICS:
-            input_token = input("Enter a token: ").lower()
-            get_token_statistics()
+            get_token_statistics(reviews, tokens)
         else:
             print(f'{input_option}\n')
+
 
 if __name__ == '__main__':
     main()
