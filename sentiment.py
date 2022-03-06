@@ -142,57 +142,72 @@ def show_token_statistics(reviews, tokens):
         print(f'The token "{input_token}" does not appear in the training data.')
 
 
-def show_sentence_statistics(tokens, reviews):
+def get_score_and_token_type(input_token, reviews, score_sum, token_types):
+    review_type_appearances = get_review_type_appearances(input_token, reviews)
+    score = compute_differential_score(review_type_appearances, reviews)
+    token_types[compute_token_classification(score)] += 1
+    score_sum += score
+    return score_sum, token_types
+
+
+def calculate_average_score_and_token_types(token_types, tokens, input_tokens, reviews, stop_words):
+    score_sum = 0
+    for input_token in input_tokens:
+        if 'stop_words' in token_types:
+            if input_token in tokens and input_token not in stop_words:
+                score_sum, token_types = get_score_and_token_type(input_token, reviews, score_sum, token_types)
+            if input_token in stop_words:
+                token_types["stop_words"] += 1
+            else:
+                token_types['unknown'] += 1
+        else:
+            if input_token in tokens:
+                score_sum, token_types = get_score_and_token_type(input_token, reviews, score_sum, token_types)
+            else:
+                token_types['unknown'] += 1
+    if score_sum != 0:
+        average_differential_score = score_sum / (
+                token_types['positive'] + token_types['negative'] + token_types['neutral'])
+    else:
+        average_differential_score = None
+    return average_differential_score, token_types
+
+
+def show_sentence_statistics(tokens, reviews, stop_words):
     input_tokens = input('Enter a sentence as space-separated tokens: ').lower().split()
     token_types = {'positive': 0, 'negative': 0, 'neutral': 0, 'unknown': 0}
-    average_differential_score = 0
-    for input_token in input_tokens:
-        if input_token in tokens:
-            review_type_appearances = get_review_type_appearances(input_token, reviews)
-            differential_score = compute_differential_score(review_type_appearances, reviews)
-            token_types[compute_token_classification(differential_score)] += 1
-            average_differential_score += differential_score
-        else:
-            token_types['unknown'] += 1
-    if len(input_tokens) != token_types['unknown']:
-        average_differential_score /= (len(input_tokens) - token_types['unknown'])
+    average_score, token_types = calculate_average_score_and_token_types(token_types, tokens, input_tokens, reviews,
+                                                                         stop_words)
+    if average_score is not None:
         print(
             f'The sentence has {token_types["negative"]} negative, {token_types["neutral"]} neutral, {token_types["positive"]} '
             f'positive, and {token_types["unknown"]} unknown token(s).')
-        print(f'The sentence has an average tf-idf score of {average_differential_score}.')
+        print(f'The sentence has an average tf-idf score of {average_score}.')
     else:
         print('The sentence contains only unknown tokens; therefore, its average tf-idf score is undefined.')
 
-
-def show_adjusted_sentence_statistics(tokens, reviews, stop_words):
-    input_tokens = input('Enter a sentence as space-separated tokens: ').lower().split()
-    token_types = {'positive': 0, 'negative': 0, 'neutral': 0, 'unknown': 0, 'stop_words': 0}
-    average_differential_score = 0
-    for input_token in input_tokens:
-        if input_token in tokens and input_token not in stop_words:
-            review_type_appearances = get_review_type_appearances(input_token, reviews)
-            differential_score = compute_differential_score(review_type_appearances, reviews)
-            token_types[compute_token_classification(differential_score)] += 1
-            average_differential_score += differential_score
-        if input_token in stop_words:
-            token_types["stop_words"] += 1
-        else:
-            token_types['unknown'] += 1
-    if average_differential_score != 0:
-        average_differential_score /= (token_types['positive'] + token_types['negative'] + token_types['neutral'])
-        print(
-            f'The sentence has {token_types["stop_words"]} stop-word token(s), and it has {token_types["negative"]} negative, {token_types["neutral"]} neutral, {token_types["positive"]} '
-            f'positive, and {token_types["unknown"]} unknown non-stop-word tokens(s).')
-        print(f'The sentence has an average tf-idf score of {average_differential_score}.')
-    else:
-        print(f'The sentence contains only {token_types["stop_words"]} stop-word token(s) and {token_types["unknown"]} unknown non-stop-word token(s).')
-        print('Therefore, its average tf-idf score is undefined.')
 
 def save_stop_word_list(stop_words):
     with open('output.txt', 'w') as output_txt:
         for stop_word in stop_words:
             output_txt.write(f'{stop_word}\n')
     print('Stop word list saved to "output.txt".')
+
+
+def show_adjusted_sentence_statistics(tokens, reviews, stop_words):
+    input_tokens = input('Enter a sentence as space-separated tokens: ').lower().split()
+    token_types = {'positive': 0, 'negative': 0, 'neutral': 0, 'unknown': 0, 'stop_words': 0}
+    average_score, token_types = calculate_average_score_and_token_types(token_types, tokens, input_tokens, reviews,
+                                                                         stop_words)
+    if average_score is not None:
+        print(
+            f'The sentence has {token_types["stop_words"]} stop-word token(s), and it has {token_types["negative"]} negative, {token_types["neutral"]} neutral, {token_types["positive"]} '
+            f'positive, and {token_types["unknown"]} unknown non-stop-word tokens(s).')
+        print(f'The sentence has an average tf-idf score of {average_score}.')
+    else:
+        print(
+            f'The sentence contains only {token_types["stop_words"]} stop-word token(s) and {token_types["unknown"]} unknown non-stop-word token(s).')
+        print('Therefore, its average tf-idf score is undefined.')
 
 
 def main():
@@ -220,7 +235,7 @@ def main():
         elif input_option == MenuOption.SHOW_TOKEN_STATISTICS:
             show_token_statistics(reviews, tokens)
         elif input_option == MenuOption.SHOW_SENTENCE_STATISTICS:
-            show_sentence_statistics(tokens, reviews)
+            show_sentence_statistics(tokens, reviews, stop_words)
         elif input_option == MenuOption.SAVE_STOP_WORD_LIST:
             save_stop_word_list(stop_words)
         elif input_option == MenuOption.SHOW_ADJUSTED_SENTENCE_STATISTICS:
