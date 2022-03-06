@@ -17,3 +17,21 @@ class TestGetTokenFrequency(TestCase):
     def test_unmentioned(self):
         reviews = sentiment.make_review_list()
         self.assertEqual(sentiment.get_token_frequency(reviews, 'unmentioned'), 0)
+
+class TestGetTokenStatistics(TestCase):
+    def test_positive(self):
+        reviews = sentiment.make_review_list()
+        review_type_appearances = sentiment.get_review_type_appearances('good', reviews)
+        self.assertEquals(review_type_appearances["positive"], 129)
+
+    def test_negative(self):
+        reviews = sentiment.make_review_list()
+        review_type_appearances = sentiment.get_review_type_appearances('good', reviews)
+        self.assertEquals(review_type_appearances["negative"], 85)
+
+    def test_neutral(self):
+        reviews = sentiment.make_review_list()
+        review_type_appearances = sentiment.get_review_type_appearances('good', reviews)
+        self.assertEquals(review_type_appearances["neutral"], 50)
+
+

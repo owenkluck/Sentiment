@@ -50,7 +50,7 @@ def get_token_frequency(reviews, input_token):
     return number_of_appearances
 
 
-def get_token_statistics(reviews, tokens):
+def get_token_statistics(reviews, tokens, input_token):
     input_token = input("Enter a token: ").lower()
     if input_token in tokens:
         review_type_appearances = get_review_type_appearances(input_token, reviews)
