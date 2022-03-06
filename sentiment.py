@@ -13,8 +13,8 @@ class MenuOption(Enum):
     EXIT = 'Exit the program'
 
 
-def make_review_list():
-    with open("sentiment.txt", "r") as sentiment_text:
+def make_review_list(file):
+    with open(file, "r") as sentiment_text:
         reviews = []
         for line in sentiment_text:
             reviews.append(line.strip())
@@ -173,7 +173,7 @@ def save_stop_word_list(stop_words):
 
 def main():
     try:
-        reviews = make_review_list()
+        reviews = make_review_list("sentiment.txt")
     except FileNotFoundError:
         print("This file does not exist")
         return
