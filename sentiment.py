@@ -32,6 +32,18 @@ def make_token_dictionary(reviews):
     return tokens
 
 
+def get_stop_words(reviews, tokens):
+    total_tokens = 0
+    stop_words = []
+    for review in reviews:
+        for token in review[1:].split():
+            total_tokens += 1
+    for token in tokens:
+        if tokens[token] / total_tokens >= 0.002 and token not in stop_words:
+            stop_words.append(token)
+    return sorted(stop_words, key=len)
+
+
 def get_input_number(input_prompt, smallest_value, collection):
     while True:
         try:
@@ -152,6 +164,13 @@ def show_sentence_statistics(tokens, reviews):
         print('The sentence contains only unknown tokens; therefore, its average tf-idf score is undefined.')
 
 
+def save_stop_word_list(stop_words):
+    with open('output.txt', 'w') as output_txt:
+        for stop_word in stop_words:
+            output_txt.write(f'{stop_word}\n')
+    print('Stop word list saved to "output.txt".')
+
+
 def main():
     try:
         reviews = make_review_list()
@@ -159,6 +178,7 @@ def main():
         print("This file does not exist")
         return
     tokens = make_token_dictionary(reviews)
+    stop_words = get_stop_words(reviews, tokens)
     options = tuple(MenuOption)
     while True:
         print('Choose an option:')
@@ -177,6 +197,8 @@ def main():
             show_token_statistics(reviews, tokens)
         elif input_option == MenuOption.SHOW_SENTENCE_STATISTICS:
             show_sentence_statistics(tokens, reviews)
+        elif input_option == MenuOption.SAVE_STOP_WORD_LIST:
+            save_stop_word_list(stop_words)
         else:
             print(f'{input_option}\n')
 
