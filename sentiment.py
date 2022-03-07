@@ -32,12 +32,11 @@ def make_token_dictionary(reviews):
     return tokens
 
 
-def get_stop_words(reviews, tokens):
+def get_stop_words(tokens):
     total_tokens = 0
     stop_words = []
-    for review in reviews:
-        for token in review[1:].split():
-            total_tokens += 1
+    for token in tokens:
+        total_tokens += tokens[token]
     for token in tokens:
         if tokens[token] / total_tokens >= 0.002 and token not in stop_words:
             stop_words.append(token)
@@ -48,7 +47,7 @@ def get_input_number(input_prompt, smallest_value, collection):
     while True:
         try:
             input_number = int(input(input_prompt))
-            if input_number <= smallest_value or input_number > len(collection):
+            if input_number < smallest_value or input_number > len(collection):
                 raise IndexError
             return input_number
         except IndexError:
@@ -58,11 +57,18 @@ def get_input_number(input_prompt, smallest_value, collection):
 
 
 def show_reviews(reviews):
-    beginning_review_number = get_input_number(f'Enter a beginning review number from 1 to {len(reviews)}: ', 0,
-                                               reviews)
-    ending_review_number = get_input_number(
-        f'Enter a ending review number from {beginning_review_number} to {len(reviews)}: ',
-        beginning_review_number - 1, reviews)
+    if len(reviews) != 0:
+        beginning_review_number = get_input_number(f'Enter a beginning review number from 1 to {len(reviews)}: ', 1,
+                                                   reviews)
+        ending_review_number = get_input_number(
+            f'Enter a ending review number from {beginning_review_number} to {len(reviews)}: ',
+            beginning_review_number, reviews)
+    else:
+        beginning_review_number = get_input_number(f'Enter a beginning review number from 0 to {len(reviews)}: ', 0,
+                                                   reviews)
+        ending_review_number = get_input_number(
+            f'Enter a ending review number from {beginning_review_number} to {len(reviews)}: ',
+            beginning_review_number, reviews)
     for review in reviews[beginning_review_number - 1:ending_review_number]:
         print(f'Review #{reviews.index(review) + 1}: {review}')
 
@@ -156,7 +162,7 @@ def calculate_average_score_and_token_types(token_types, tokens, input_tokens, r
         if 'stop_words' in token_types:
             if input_token in tokens and input_token not in stop_words:
                 score_sum, token_types = get_score_and_token_type(input_token, reviews, score_sum, token_types)
-            if input_token in stop_words:
+            elif input_token in stop_words:
                 token_types["stop_words"] += 1
             else:
                 token_types['unknown'] += 1
@@ -165,12 +171,15 @@ def calculate_average_score_and_token_types(token_types, tokens, input_tokens, r
                 score_sum, token_types = get_score_and_token_type(input_token, reviews, score_sum, token_types)
             else:
                 token_types['unknown'] += 1
-    if score_sum != 0:
-        average_differential_score = score_sum / (
-                token_types['positive'] + token_types['negative'] + token_types['neutral'])
+    if 'stop_words' in token_types:
+        defined = len(input_tokens) != (token_types['unknown'] + token_types['stop_words'])
     else:
-        average_differential_score = None
-    return average_differential_score, token_types
+        defined = len(input_tokens) != token_types['unknown']
+    if defined:
+        average_score = score_sum / (token_types['positive'] + token_types['negative'] + token_types['neutral'])
+    else:
+        average_score = None
+    return average_score, token_types
 
 
 def show_sentence_statistics(tokens, reviews, stop_words):
@@ -217,13 +226,13 @@ def main():
         print("This file does not exist")
         return
     tokens = make_token_dictionary(reviews)
-    stop_words = get_stop_words(reviews, tokens)
+    stop_words = get_stop_words(tokens)
     options = tuple(MenuOption)
     while True:
         print('Choose an option:')
         for i in range(len(options)):
             print(f'\t{i + 1}. {options[i].value}')
-        input_option = options[get_input_number('Enter a number from 1 to 8: ', 0, options) - 1]
+        input_option = options[get_input_number('Enter a number from 1 to 8: ', 1, options) - 1]
         if input_option == MenuOption.EXIT:
             return
         elif input_option == MenuOption.SHOW_REVIEWS:

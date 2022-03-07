@@ -55,7 +55,7 @@ class TestSentiment(TestCase):
     def test_save_stop_word_list(self):
         reviews = sentiment.make_review_list('test_sentiment.txt')
         tokens = sentiment.make_token_dictionary(reviews)
-        stop_words = sentiment.get_stop_words(reviews, tokens)
+        stop_words = sentiment.get_stop_words(tokens)
         sentiment.save_stop_word_list(stop_words)
         with open('output.txt', 'r') as output_text:
             number_of_lines = 0
