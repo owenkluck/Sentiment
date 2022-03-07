@@ -53,9 +53,23 @@ class TestSentiment(TestCase):
                 number_of_lines += 1
         self.assertEqual(number_of_lines, 51)
 
+    def test_calculate_average_score_and_token_types_including_stop_words(self):
+        average_score, token_types = sentiment.calculate_average_score_and_token_types(
+            {'positive': 0, 'negative': 0, 'neutral': 0, 'unknown': 0}, self.tokens,
+            'absolutely detestable ; would not watch again'.split(), self.reviews, self.stop_words)
+        self.assertEqual(token_types, {'positive': 1, 'negative': 5, 'neutral': 0, 'unknown': 1})
+        self.assertEqual(average_score, -0.18812093738509109)
+
     def test_calculate_average_score_and_token_types_ignoring_stop_words(self):
         average_score, token_types = sentiment.calculate_average_score_and_token_types(
             {'positive': 0, 'negative': 0, 'neutral': 0, 'unknown': 0, 'stop_words': 0}, self.tokens,
             'absolutely detestable ; would not watch again'.split(), self.reviews, self.stop_words)
         self.assertEqual(token_types, {'positive': 1, 'negative': 4, 'neutral': 0, 'unknown': 1, 'stop_words': 1})
         self.assertEqual(average_score, -0.17687684751966531)
+
+    def test_average_idf_score_of_sentence_none(self):
+        average_score, token_types = sentiment.calculate_average_score_and_token_types(
+            {'positive': 0, 'negative': 0, 'neutral': 0, 'unknown': 0, 'stop_words': 0}, self.tokens, 'igloo'.split()
+            , self.reviews, self.stop_words)
+        self.assertEqual(token_types, {'positive': 0, 'negative': 0, 'neutral': 0, 'unknown': 1, 'stop_words': 0})
+        self.assertEqual(average_score, None)
