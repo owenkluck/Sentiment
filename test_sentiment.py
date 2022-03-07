@@ -63,13 +63,22 @@ class TestSentiment(TestCase):
                 number_of_lines += 1
         self.assertEqual(number_of_lines, 51)
 
+    def test_average_idf_score_of_sentence_stop_words(self):
+        reviews = sentiment.make_review_list('test_sentiment.txt')
+        tokens = sentiment.make_token_dictionary(reviews)
+        stop_words = sentiment.get_stop_words(tokens)
+        average_score, token_types = sentiment.calculate_average_score_and_token_types({'positive': 0, 'negative': 0, 'neutral': 0, 'unknown': 0, 'stop_words': 0}, tokens, 'absolutely detestable ; would not watch again'.split()
+                                                                                       , reviews, stop_words)
+        self.assertEqual(token_types, {'positive': 1, 'negative': 4, 'neutral': 0, 'unknown': 1, 'stop_words': 1})
+        self.assertEqual(average_score, -0.17687684751966531)
+
     def test_average_idf_score_of_sentence_no_stop_words(self):
         reviews = sentiment.make_review_list('test_sentiment.txt')
         tokens = sentiment.make_token_dictionary(reviews)
-        stop_words = sentiment.get_stop_words(reviews, tokens)
-        average_score, token_types = sentiment.calculate_average_score_and_token_types({'positive': 0, 'negative': 0, 'neutral': 0, 'unknown': 0, 'stop_words': 0}, tokens, 'absolutely detestable ; would not watch again'
+        stop_words = sentiment.get_stop_words(tokens)
+        average_score, token_types = sentiment.calculate_average_score_and_token_types({'positive': 0, 'negative': 0, 'neutral': 0, 'unknown': 0, 'stop_words': 0}, tokens, 'igloo'.split()
                                                                                        , reviews, stop_words)
-        self.assertEqual(token_types, {'positive': 1, 'negative': 5, 'neutral': 0, 'unknown': 1, 'stop_words': 1})
-        self.assertEqual(average_score, -0.18812093738509109)
+        self.assertEqual(token_types, {'positive': 0, 'negative': 0, 'neutral': 0, 'unknown': 1, 'stop_words': 0})
+        self.assertEqual(average_score, None)
 
 
