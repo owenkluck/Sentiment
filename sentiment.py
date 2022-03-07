@@ -156,7 +156,7 @@ def calculate_average_score_and_token_types(token_types, tokens, input_tokens, r
         if 'stop_words' in token_types:
             if input_token in tokens and input_token not in stop_words:
                 score_sum, token_types = get_score_and_token_type(input_token, reviews, score_sum, token_types)
-            if input_token in stop_words:
+            elif input_token in stop_words:
                 token_types["stop_words"] += 1
             else:
                 token_types['unknown'] += 1
@@ -165,12 +165,15 @@ def calculate_average_score_and_token_types(token_types, tokens, input_tokens, r
                 score_sum, token_types = get_score_and_token_type(input_token, reviews, score_sum, token_types)
             else:
                 token_types['unknown'] += 1
-    if score_sum != 0:
-        average_differential_score = score_sum / (
-                token_types['positive'] + token_types['negative'] + token_types['neutral'])
-    else:
-        average_differential_score = None
-    return average_differential_score, token_types
+        if 'stop_words' in token_types:
+            defined = len(input_tokens) != (token_types['unknown'] + token_types['stop_words'])
+        else:
+            defined = len(input_tokens) != token_types['unknown']
+        if defined:
+            average_score = score_sum / (token_types['positive'] + token_types['negative'] + token_types['neutral'])
+        else:
+            average_score = None
+        return average_score, token_types
 
 
 def show_sentence_statistics(tokens, reviews, stop_words):
